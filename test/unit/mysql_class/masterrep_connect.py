@@ -43,6 +43,9 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_silent_true -> Test with silent true set.
+        test_silent_false -> Test with silent false set.
+        test_silent_default -> Test with silent default setting.
         test_db_up -> Test with connection up.
         test_db_down -> Test with connection down.
 
@@ -73,6 +76,51 @@ class UnitTest(unittest.TestCase):
             self.name, self.server_id, self.sql_user, self.sql_pass,
             os_type=self.machine, defaults_file=self.defaults_file,
             rep_user=self.rep_user, rep_japd=self.rep_japd)
+
+    @mock.patch("mysql_class.Server.connect")
+    def test_silent_true(self, mock_server):
+
+        """Function:  test_silent_true
+
+        Description:  Test with silent true set.
+
+        Arguments:
+
+        """
+
+        mock_server.return_value = True
+
+        self.assertFalse(self.mysqlrep.connect(silent=True))
+
+    @mock.patch("mysql_class.Server.connect")
+    def test_silent_false(self, mock_server):
+
+        """Function:  test_silent_false
+
+        Description:  Test with silent false set.
+
+        Arguments:
+
+        """
+
+        mock_server.return_value = True
+
+        self.assertFalse(self.mysqlrep.connect(silent=False))
+
+    @mock.patch("mysql_class.Server.connect")
+    def test_silent_default(self, mock_server):
+
+        """Function:  test_silent_default
+
+        Description:  Test with silent default setting.
+
+        Arguments:
+
+        """
+
+        mock_server.return_value = True
+
+        self.assertFalse(self.mysqlrep.connect())
 
     @mock.patch("mysql_class.MasterRep.upd_mst_status")
     @mock.patch("mysql_class.Server.set_srv_gtid")

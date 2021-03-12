@@ -46,8 +46,8 @@ cp requirements-python-lib.txt > {Other_Python_Project}/requirements-python-lib.
 Modify the {Other_Python_Project}/README.md file:
 
 ```
-   pip install -r requirements-mysql-lib.txt --target mysql_lib
-   pip install -r requirements-python-lib.txt --target mysql_lib/lib
+   pip install -r requirements-mysql-lib.txt --target mysql_lib --system
+   pip install -r requirements-python-lib.txt --target mysql_lib/lib --system
 ```
 
 ##### Add the general Mysql-Lib requirements to the other program's requirements.txt file.  Remove any duplicates.
@@ -82,34 +82,23 @@ Install/upgrade system modules.
 cd mysql-lib
 sudo bash
 umask 022
-pip install -r requirements.txt --upgrade
+pip install -r requirements.txt --upgrade --system
 exit
 ```
 
-### Testing mysql_class.py:
-
-```
-cd {Python_Project}/mysql-lib
-test/unit/mysql_class/unit_test_run.sh
-```
-
-### Code Coverage mysql_class.py:
-```
-cd {Python_Project}/mysql-lib
-test/unit/mysql_class/code_coverage.sh
-```
-
-### Testing mysql-lib.py:
+### Testing:
 
 ```
 cd {Python_Project}/mysql-lib
 test/unit/mysql_libs/unit_test_run.sh
+test/unit/mysql_class/unit_test_run.sh
 ```
 
-### Code Coverage mysql-lib.py:
+### Code Coverage:
 ```
 cd {Python_Project}/mysql-lib
 test/unit/mysql_libs/code_coverage.sh
+test/unit/mysql_class/code_coverage.sh
 ```
 
 # Integration Testing:
@@ -134,7 +123,7 @@ Install/upgrade system modules.
 cd mysql-lib
 sudo bash
 umask 022
-pip install -r requirements.txt --upgrade
+pip install -r requirements.txt --upgrade --system
 exit
 ```
 
@@ -176,30 +165,19 @@ vim mysql.cfg
 chmod 600 mysql.cfg
 ```
 
-### Testing mysql_class.py:
-
-```
-cd {Python_Project}/mysql-lib
-test/integration/mysql_class/integration_test_run.sh
-```
-
-### Code Coverage mysql_class.py:
-```
-cd {Python_Project}/mysql-lib
-test/integration/mysql_class/code_coverage.sh
-```
-
-### Testing mysql-lib.py:
+### Testing:
 
 ```
 cd {Python_Project}/mysql-lib
 test/integration/mysql_libs/integration_test_run.sh
+test/integration/mysql_class/integration_test_run.sh
 ```
 
-### Code Coverage mysql-lib.py:
+### Code Coverage:
 ```
 cd {Python_Project}/mysql-lib
 test/integration/mysql_libs/code_coverage.sh
+test/integration/mysql_class/code_coverage.sh
 ```
 
 ### Master Replication Testing Section
@@ -246,14 +224,14 @@ vim mysql.cfg
 chmod 600 mysql.cfg
 ```
 
-### Testing mysql_class.py:
+### Testing:
 
 ```
 cd {Python_Project}/mysql-lib
 test/integration/mysql_class/rep_integration_test_run.sh
 ```
 
-### Code Coverage mysql_class.py:
+### Code Coverage:
 ```
 cd {Python_Project}/mysql-lib
 test/integration/mysql_class/rep_code_coverage.sh
@@ -330,14 +308,14 @@ vim slave.txt
 chmod 600 slave.txt
 ```
 
-### Testing mysql_class.py:
+### Testing:
 
 ```
 cd {Python_Project}/mysql-lib
 test/integration/mysql_class/slaverep_integration_test_run.sh
 ```
 
-### Code Coverage mysql_class.py:
+### Code Coverage:
 ```
 cd {Python_Project}/mysql-lib
 test/integration/mysql_class/slaverep_code_coverage.sh

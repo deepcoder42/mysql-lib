@@ -116,6 +116,8 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_rep_user -> Test with rep_user information passed.
+        test_no_rep_user -> Test with no rep_user information passed.
         test_dont_add_array -> Test with do not add slaves that are down.
         test_multiple_array_down -> Test with multiple slaves and down slave.
         test_multiple_array -> Test with multiple slaves.
@@ -150,6 +152,69 @@ class UnitTest(unittest.TestCase):
                             "japd": None, "serv_os": "Linux",
                             "host": "hostname", "port": 3306,
                             "cfg_file": "cfg_file"}]
+        self.cfg_array3 = {"name": "name", "sid": "sid", "user": "user",
+                           "japd": None, "serv_os": "Linux",
+                           "host": "hostname", "port": 3306,
+                           "cfg_file": "cfg_file", "rep_user": "rep_user",
+                           "rep_japd": None}
+        self.cfg_array4 = [{"name": "name", "sid": "sid", "user": "user",
+                            "japd": None, "serv_os": "Linux",
+                            "host": "hostname", "port": 3306,
+                            "cfg_file": "cfg_file", "rep_user": "rep_user",
+                            "rep_japd": None},
+                           {"name": "name2", "sid": "sid2", "user": "user",
+                            "japd": None, "serv_os": "Linux",
+                            "host": "hostname", "port": 3306,
+                            "cfg_file": "cfg_file", "rep_user": "rep_user",
+                            "rep_japd": None}]
+
+    @mock.patch("mysql_libs.mysql_class.SlaveRep")
+    def test_rep_user2(self, mock_rep):
+
+        """Function:  test_rep_user2
+
+        Description:  Test with rep_user information passed.
+
+        Arguments:
+
+        """
+
+        mock_rep.return_value = self.slave
+        slaves = mysql_libs.create_slv_array(self.cfg_array4)
+
+        self.assertEqual(len(slaves), 2)
+
+    @mock.patch("mysql_libs.mysql_class.SlaveRep")
+    def test_rep_user(self, mock_rep):
+
+        """Function:  test_rep_user
+
+        Description:  Test with rep_user information passed.
+
+        Arguments:
+
+        """
+
+        mock_rep.return_value = self.slave
+        slaves = mysql_libs.create_slv_array([self.cfg_array3])
+
+        self.assertEqual(len(slaves), 1)
+
+    @mock.patch("mysql_libs.mysql_class.SlaveRep")
+    def test_no_rep_user(self, mock_rep):
+
+        """Function:  test_no_rep_user
+
+        Description:  Test with no rep_user information passed.
+
+        Arguments:
+
+        """
+
+        mock_rep.return_value = self.slave
+        slaves = mysql_libs.create_slv_array([self.cfg_array])
+
+        self.assertEqual(len(slaves), 1)
 
     @mock.patch("mysql_libs.mysql_class.SlaveRep")
     def test_dont_add_array(self, mock_rep):

@@ -83,7 +83,7 @@ class UnitTest(unittest.TestCase):
         errnum2 = 1045
         errmsg2 = "1045 (28000): Access denied for user"
         self.results2 = "Couldn't connect to database.  MySQL error %d: %s" \
-                       % (errnum2, errmsg2)
+                        % (errnum2, errmsg2)
 
     def test_silent_exception2(self):
 

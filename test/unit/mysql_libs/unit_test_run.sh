@@ -13,6 +13,7 @@ test/unit/mysql_libs/checksum.py
 test/unit/mysql_libs/check_tbl.py
 test/unit/mysql_libs/chg_slv_state.py
 test/unit/mysql_libs/create_instance.py
+test/unit/mysql_libs/disconnect.py
 test/unit/mysql_libs/fetch_db_dict.py
 test/unit/mysql_libs/fetch_logs.py
 test/unit/mysql_libs/fetch_tbl_dict.py

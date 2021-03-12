@@ -1,1 +1,1 @@
-git+ssh://github.com/deepcoder42/mysql-lib.git@5.0.2#egg=mysql-lib
+git+ssh://git@github.com/deepcoder42/mysql-lib.git@5.0.4#egg=mysql-lib

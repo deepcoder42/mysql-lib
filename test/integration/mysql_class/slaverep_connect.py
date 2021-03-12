@@ -43,6 +43,12 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_silent_true2 -> Test with silent true set.
+        test_silent_true -> Test with silent true set.
+        test_silent_false2 -> Test with silent false set.
+        test_silent_false -> Test with silent false set.
+        test_silent_default2 -> Test with silent default setting.
+        test_silent_default -> Test with silent default setting.
         test_mst_host -> Test with mst_host attribute.
         test_exe_gtid -> Test with exe_gtid attribute.
         test_gtid_mode -> Test with gtid_mode attribute.
@@ -70,6 +76,99 @@ class UnitTest(unittest.TestCase):
             self.cfg.name, self.cfg.sid, self.cfg.user, self.cfg.japd,
             os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host,
             port=self.cfg.port, defaults_file=self.cfg.cfg_file)
+        self.svr2 = mysql_class.SlaveRep(
+            self.cfg.name, self.cfg.sid, self.cfg.user, "testmenopwd",
+            os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host,
+            port=self.cfg.port, defaults_file=self.cfg.cfg_file)
+        self.err_msg = "Couldn't connect to database.  MySQL error 1045:"
+
+    def test_silent_true2(self):
+
+        """Function:  test_silent_true2
+
+        Description:  Test with silent true set.
+
+        Arguments:
+
+        """
+
+        self.svr2.connect(silent=True)
+
+        self.assertEqual(self.svr2.conn_msg[:48], self.err_msg)
+
+    def test_silent_true(self):
+
+        """Function:  test_silent_true
+
+        Description:  Test with silent true set.
+
+        Arguments:
+
+        """
+
+        self.svr2.connect(silent=True)
+
+        self.assertFalse(self.svr2.conn)
+
+    def test_silent_false2(self):
+
+        """Function:  test_silent_false2
+
+        Description:  Test with silent false set.
+
+        Arguments:
+
+        """
+
+        with gen_libs.no_std_out():
+            self.svr2.connect(silent=False)
+
+        self.assertEqual(self.svr2.conn_msg[:48], self.err_msg)
+
+    def test_silent_false(self):
+
+        """Function:  test_silent_false
+
+        Description:  Test with silent false set.
+
+        Arguments:
+
+        """
+
+        with gen_libs.no_std_out():
+            self.svr2.connect(silent=False)
+
+        self.assertFalse(self.svr2.conn)
+
+    def test_silent_default2(self):
+
+        """Function:  test_silent_default2
+
+        Description:  Test with silent default setting.
+
+        Arguments:
+
+        """
+
+        with gen_libs.no_std_out():
+            self.svr2.connect()
+
+        self.assertEqual(self.svr2.conn_msg[:48], self.err_msg)
+
+    def test_silent_default(self):
+
+        """Function:  test_silent_default
+
+        Description:  Test with silent default setting.
+
+        Arguments:
+
+        """
+
+        with gen_libs.no_std_out():
+            self.svr2.connect()
+
+        self.assertFalse(self.svr2.conn)
 
     def test_mst_host(self):
 
@@ -137,15 +236,10 @@ class UnitTest(unittest.TestCase):
 
         """
 
-        svr = mysql_class.SlaveRep(
-            self.cfg.name, self.cfg.sid, self.cfg.user, "testme",
-            os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host,
-            port=self.cfg.port, defaults_file=self.cfg.cfg_file)
-
         with gen_libs.no_std_out():
-            svr.connect()
+            self.svr2.connect()
 
-        self.assertFalse(svr.conn)
+        self.assertFalse(self.svr2.conn)
 
     def test_connect(self):
 

@@ -86,6 +86,7 @@ coverage run -a --source=mysql_libs test/unit/mysql_libs/checksum.py
 coverage run -a --source=mysql_libs test/unit/mysql_libs/check_tbl.py
 coverage run -a --source=mysql_libs test/unit/mysql_libs/chg_slv_state.py
 coverage run -a --source=mysql_libs test/unit/mysql_libs/create_instance.py
+coverage run -a --source=mysql_libs test/unit/mysql_libs/disconnect.py
 coverage run -a --source=mysql_libs test/unit/mysql_libs/fetch_db_dict.py
 coverage run -a --source=mysql_libs test/unit/mysql_libs/fetch_logs.py
 coverage run -a --source=mysql_libs test/unit/mysql_libs/fetch_tbl_dict.py
