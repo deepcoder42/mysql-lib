@@ -1,0 +1,5 @@
+coverage==4.4.2
+mock==2.0.0
+mysql-connector-python==8.0.16
+simplejson==2.0.9
+unittest2>=1.1.0

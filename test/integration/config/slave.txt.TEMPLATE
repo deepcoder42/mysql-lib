@@ -1,0 +1,23 @@
+# Slave Configuration file
+# Classification (U)
+# Unclassified until filled in.
+# Slave 1 Configuration
+user = USER
+japd = PSWORD
+# Replication user information
+rep_user = REP_USER
+rep_japd = REP_PSWORD
+# MySQL DB host information
+# DO NOT USE 127.0.0.1 or localhost for the master, use actual IP.
+host = HOST_IP
+name = HOST_NAME
+# MySQL database server id - unique to each database
+sid = SERVER_ID
+# MySQL configuration settings
+cfg_file = None
+# MySQL database port (default is 3306)
+port = 3306
+# Server running OS
+serv_os = Linux
+# MySQL Definition configuration file
+extra_def_file = DIRECTORY_PATH/mysql.cfg
