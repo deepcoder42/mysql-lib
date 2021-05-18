@@ -36,6 +36,43 @@ import version
 __version__ = version.__version__
 
 
+class Server(object):
+
+    """Class:  Server
+
+    Description:  Class stub holder for Server class.
+
+    Methods:
+        __init__ -> Initialize environment.
+        disconnect -> Test of disconnect method.
+
+    """
+
+    def __init__(self):
+
+        """Function:  __init__
+
+        Description:  Initialize environment.
+
+        Arguments:
+
+        """
+
+        self.version = (5, 7, 33)
+
+    def get_server_version(self):
+
+        """Function:  get_server_version
+
+        Description:  Test of get_server_version function.
+
+        Arguments:
+
+        """
+
+        return self.version
+
+
 class UnitTest(unittest.TestCase):
 
     """Class:  UnitTest
@@ -44,6 +81,7 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_version -> Test with version attribute..
         test_silent_exception2 -> Test silent connection method exception.
         test_silent_exception -> Test silent connection method exception.
         test_database -> Test with database argument passed.
@@ -84,6 +122,27 @@ class UnitTest(unittest.TestCase):
         errmsg2 = "1045 (28000): Access denied for user"
         self.results2 = "Couldn't connect to database.  MySQL error %d: %s" \
                         % (errnum2, errmsg2)
+        self.mysql = Server()
+
+    @mock.patch("mysql_class.mysql.connector.connect")
+    def test_version(self, mock_connect):
+
+        """Function:  test_version
+
+        Description:  Test with version attribute.
+
+        Arguments:
+
+        """
+
+        mock_connect.return_value = self.mysql
+
+        mysqldb = mysql_class.Server(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqldb.connect()
+
+        self.assertEqual(mysqldb.version, (5, 7, 33))
 
     def test_silent_exception2(self):
 
@@ -130,7 +189,7 @@ class UnitTest(unittest.TestCase):
 
         """
 
-        mock_connect.return_value = True
+        mock_connect.return_value = self.mysql
         mysqldb = mysql_class.Server(
             self.name, self.server_id, self.sql_user, self.sql_pass,
             self.machine, defaults_file=self.defaults_file)
@@ -148,7 +207,7 @@ class UnitTest(unittest.TestCase):
 
         """
 
-        mock_connect.return_value = True
+        mock_connect.return_value = self.mysql
         mysqldb = mysql_class.Server(
             self.name, self.server_id, self.sql_user, self.sql_pass,
             self.machine, defaults_file=self.defaults_file)
@@ -166,7 +225,8 @@ class UnitTest(unittest.TestCase):
 
         """
 
-        mock_connect.return_value = True
+        mock_connect.return_value = self.mysql
+
         mysqldb = mysql_class.Server(
             self.name, self.server_id, self.sql_user, self.sql_pass,
             self.machine, defaults_file=self.defaults_file)
@@ -201,7 +261,7 @@ class UnitTest(unittest.TestCase):
 
         """
 
-        mock_connect.return_value = True
+        mock_connect.return_value = self.mysql
         mysqldb = mysql_class.Server(
             self.name, self.server_id, self.sql_user, self.sql_pass,
             self.machine, defaults_file=self.defaults_file)

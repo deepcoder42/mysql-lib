@@ -43,6 +43,9 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_conn_msg3 -> Test conn_msg with corrected passwd.
+        test_version2 -> Test with version attribute with connection failure.
+        test_version -> Test with version attribute.
         test_silent -> Test silent option.
         test_conn_msg2 -> Test conn_msg attribute failed connection.
         test_conn_msg -> Test conn_msg attribute failed connection.
@@ -74,6 +77,39 @@ class UnitTest(unittest.TestCase):
         self.database = "mysql"
         self.results = "Couldn't connect to database.  MySQL error 1045:"
 
+    def test_version2(self):
+
+        """Function:  test_version2
+
+        Description:  Test with version attribute with connection failure.
+
+        Arguments:
+
+        """
+
+        svr = mysql_class.Server(
+            self.cfg.name, self.cfg.sid, self.cfg.user, "testme",
+            os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host,
+            port=self.cfg.port, defaults_file=self.cfg.cfg_file)
+
+        svr.connect(silent=True)
+
+        self.assertFalse(self.svr.version)
+
+    def test_version(self):
+
+        """Function:  test_version
+
+        Description:  Test with version attribute.
+
+        Arguments:
+
+        """
+
+        self.svr.connect()
+
+        self.assertTrue(self.svr.version)
+
     def test_silent(self):
 
         """Function:  test_silent
@@ -92,6 +128,25 @@ class UnitTest(unittest.TestCase):
         svr.connect(silent=True)
 
         self.assertEqual(svr.conn_msg[:48], self.results)
+
+    def test_conn_msg3(self):
+
+        """Function:  test_conn_msg3
+
+        Description:  Test conn_msg with corrected passwd.
+
+        Arguments:
+
+        """
+
+        tmp_japd = self.svr.sql_pass
+        self.svr.set_pass_config("testme")
+        self.svr.connect(silent=True)
+        tmp_msg = self.svr.conn_msg[:48]
+        self.svr.set_pass_config(tmp_japd)
+        self.svr.connect(silent=True)
+
+        self.assertEqual((tmp_msg, self.svr.conn_msg), (self.results, None))
 
     def test_conn_msg2(self):
 

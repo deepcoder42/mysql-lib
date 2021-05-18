@@ -44,7 +44,7 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
-        test_retry -> Test with retry attribute.
+        test_conn_retry -> Test with conn_retry attribute.
         test_tmp_tbl -> Test with tmp_tbl attribute.
         test_skip_ctr -> Test with skip_ctr attribute.
 
@@ -70,11 +70,11 @@ class UnitTest(unittest.TestCase):
             port=self.cfg.port, defaults_file=self.cfg.cfg_file)
         self.svr.connect()
 
-    def test_retry(self):
+    def test_conn_retry(self):
 
-        """Function:  test_retry
+        """Function:  test_conn_retry
 
-        Description:  Test with retry attribute.
+        Description:  Test with conn_retry attribute.
 
         Arguments:
 

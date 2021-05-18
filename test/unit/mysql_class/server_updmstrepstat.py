@@ -43,6 +43,8 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_version2 -> Test with innodb_support_xa in pre-MySQL 8.0.
+        test_version -> Test with no innodb_support_xa in MySQL 8.0.
         test_value -> Test with values returned.
 
     """
@@ -66,6 +68,52 @@ class UnitTest(unittest.TestCase):
         self.port = 3307
         self.defaults_file = "def_cfg_file"
         self.extra_def_file = "extra_cfg_file"
+        self.fetch_vars = [{"log_bin": "ON"}, {"sync_binlog": "YES"},
+                           {"innodb_flush_log_at_trx_commit": "YES"},
+                           {"innodb_support_xa": "ON"},
+                           {"binlog_format": "BIN"}]
+        self.fetch_vars2 = [{"log_bin": "ON"}, {"sync_binlog": "YES"},
+                            {"innodb_flush_log_at_trx_commit": "YES"},
+                            {},
+                            {"binlog_format": "BIN"}]
+
+    @mock.patch("mysql_class.fetch_sys_var")
+    def test_version2(self, mock_sysvar):
+
+        """Function:  test_version2
+
+        Description:  Test with innodb_support_xa in pre-MySQL 8.0.
+
+        Arguments:
+
+        """
+
+        mock_sysvar.side_effect = self.fetch_vars
+        mysqldb = mysql_class.Server(self.name, self.server_id, self.sql_user,
+                                     self.sql_pass, self.machine,
+                                     defaults_file=self.defaults_file)
+
+        mysqldb.upd_mst_rep_stat()
+        self.assertEqual(mysqldb.innodb_xa, "ON")
+
+    @mock.patch("mysql_class.fetch_sys_var")
+    def test_version(self, mock_sysvar):
+
+        """Function:  test_version
+
+        Description:  Test with no innodb_support_xa in MySQL 8.0.
+
+        Arguments:
+
+        """
+
+        mock_sysvar.side_effect = self.fetch_vars2
+        mysqldb = mysql_class.Server(self.name, self.server_id, self.sql_user,
+                                     self.sql_pass, self.machine,
+                                     defaults_file=self.defaults_file)
+
+        mysqldb.upd_mst_rep_stat()
+        self.assertEqual(mysqldb.innodb_xa, None)
 
     @mock.patch("mysql_class.fetch_sys_var")
     def test_value(self, mock_sysvar):
@@ -78,11 +126,7 @@ class UnitTest(unittest.TestCase):
 
         """
 
-        mock_sysvar.side_effect = [{"log_bin": "ON"},
-                                   {"sync_binlog": "YES"},
-                                   {"innodb_flush_log_at_trx_commit": "YES"},
-                                   {"innodb_support_xa": "YES"},
-                                   {"binlog_format": "BIN"}]
+        mock_sysvar.side_effect = self.fetch_vars
         mysqldb = mysql_class.Server(self.name, self.server_id, self.sql_user,
                                      self.sql_pass, self.machine,
                                      defaults_file=self.defaults_file)

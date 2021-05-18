@@ -42,6 +42,8 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_tran_retry -> Test with slave transaction retry attribute.
+        test_conn_retry -> Test with slave connection retry attribute.
         test_rep_user -> Test with replication user information passed.
         test_no_rep_user -> Test with no replication user information passed.
         test_no_extra_def_file -> Test with no extra_def_file arg.
@@ -78,6 +80,40 @@ class UnitTest(unittest.TestCase):
         self.config = {key1 + key2: self.sql_pass}
         self.rep_user = "rep_user"
         self.rep_japd = "rep_japd"
+
+    def test_tran_retry(self):
+
+        """Function:  test_tran_retry
+
+        Description:  Test with slave transaction retry attribute.
+
+        Arguments:
+
+        """
+
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            os_type=self.machine, defaults_file=self.defaults_file,
+            rep_user=self.rep_user, rep_japd=self.rep_japd)
+
+        self.assertEqual(mysqlrep.tran_retry, None)
+
+    def test_conn_retry(self):
+
+        """Function:  test_conn_retry
+
+        Description:  Test with slave connection retry attribute.
+
+        Arguments:
+
+        """
+
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            os_type=self.machine, defaults_file=self.defaults_file,
+            rep_user=self.rep_user, rep_japd=self.rep_japd)
+
+        self.assertEqual(mysqlrep.conn_retry, None)
 
     def test_rep_user(self):
 

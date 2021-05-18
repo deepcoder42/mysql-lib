@@ -28,7 +28,7 @@
 # Installation:
 
 ### Pip Installation:
-  * Replace **{Python_Project}** with the baseline path of the python program.
+  * From here on out, any reference to **{Python_Project}** or **PYTHON_PROJECT** replace with the baseline path of the python program.
   * Replace **{Other_Python_Project}** with the baseline path of another python program.
 
 ###### Create requirements file in another program's project to install mysql-lib as a library module.
@@ -67,13 +67,11 @@ simplejson==2.0.9
 ### Installation:
 
 Install the project using git.
-  * Replace **{Python_Project}** with the baseline path of the python program.
-  * Replace **{Branch_Name}** with the name of the Git branch being tested.  See Git Merge Request.
 
 ```
 umask 022
 cd {Python_Project}
-git clone --branch {Branch_Name} git@github.com:deepcoder42/mysql-lib.git
+git clone git@github.com:deepcoder42/mysql-lib.git
 ```
 
 Install/upgrade system modules.
@@ -107,25 +105,7 @@ NOTE:  Integration testing will require access to a MySQL database server.
 
 ### Installation:
 
-Install the project using git.
-  * Replace **{Python_Project}** with the baseline path of the python program.
-  * Replace **{Branch_Name}** with the name of the Git branch being tested.  See Git Merge Request.
-
-```
-umask 022
-cd {Python_Project}
-git clone --branch {Branch_Name} git@github.com:deepcoder42/mysql-lib.git
-```
-
-Install/upgrade system modules.
-
-```
-cd mysql-lib
-sudo bash
-umask 022
-pip install -r requirements.txt --upgrade --system
-exit
-```
+Install the project using the procedures in the Unit Testing - Installation section.
 
 ### Configuration:
 

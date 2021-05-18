@@ -43,6 +43,7 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_version -> Test with version pre MySQL 8.0.
         test_value2 -> Test with smaller tmp_tbl size.
         test_value -> Test with values returned.
 
@@ -67,6 +68,8 @@ class UnitTest(unittest.TestCase):
         self.port = 3307
         self.defaults_file = "def_cfg_file"
         self.extra_def_file = "extra_cfg_file"
+        self.version = (5, 7, 33)
+        self.version2 = (8, 0, 3)
 
         self.show_status = [
             {"Variable_name": "key_buffer_size",
@@ -130,6 +133,83 @@ class UnitTest(unittest.TestCase):
              "Value": "13"},
             {"Variable_name": "tmp_table_size",
              "Value": "4"}]
+        self.show_status3 = [
+            {"Variable_name": "key_buffer_size",
+             "Value": "10000000"},
+            {"Variable_name": "innodb_buffer_pool_size",
+             "Value": "2"},
+            {"Variable_name": "innodb_additional_mem_pool_size",
+             "Value": "3"},
+            {"Variable_name": "innodb_log_buffer_size",
+             "Value": "4"},
+            {"Variable_name": "read_buffer_size",
+             "Value": "5"},
+            {"Variable_name": "read_rnd_buffer_size",
+             "Value": "6"},
+            {"Variable_name": "sort_buffer_size",
+             "Value": "7"},
+            {"Variable_name": "join_buffer_size",
+             "Value": "8"},
+            {"Variable_name": "thread_stack",
+             "Value": "9"},
+            {"Variable_name": "max_allowed_packet",
+             "Value": "10"},
+            {"Variable_name": "net_buffer_length",
+             "Value": "11"},
+            {"Variable_name": "max_connections",
+             "Value": "12"},
+            {"Variable_name": "max_heap_table_size",
+             "Value": "13"},
+            {"Variable_name": "tmp_table_size",
+             "Value": "14"}]
+
+    @mock.patch("mysql_class.fetch_global_var")
+    @mock.patch("mysql_class.Server.col_sql")
+    def test_version2(self, mock_sql, mock_var):
+
+        """Function:  test_version2
+
+        Description:  Test with version for MySQL 8.0 or higher.
+
+        Arguments:
+
+        """
+
+        mock_var.side_effect = [{"Threads_connected": "15"},
+                                {"Uptime": "16"}]
+        mock_sql.return_value = self.show_status3
+        mysqldb = mysql_class.Server(self.name, self.server_id, self.sql_user,
+                                     self.sql_pass, self.machine,
+                                     defaults_file=self.defaults_file)
+        mysqldb.version = self.version2
+        mysqldb.upd_srv_stat()
+
+        self.assertEqual((mysqldb.version, mysqldb.qry_cache),
+                         (self.version2, 0))
+
+    @mock.patch("mysql_class.fetch_global_var")
+    @mock.patch("mysql_class.Server.col_sql")
+    def test_version(self, mock_sql, mock_var):
+
+        """Function:  test_version
+
+        Description:  Test with version pre MySQL 8.0.
+
+        Arguments:
+
+        """
+
+        mock_var.side_effect = [{"Threads_connected": "15"},
+                                {"Uptime": "16"}]
+        mock_sql.return_value = self.show_status
+        mysqldb = mysql_class.Server(self.name, self.server_id, self.sql_user,
+                                     self.sql_pass, self.machine,
+                                     defaults_file=self.defaults_file)
+        mysqldb.version = self.version
+        mysqldb.upd_srv_stat()
+
+        self.assertEqual((mysqldb.version, mysqldb.qry_cache),
+                         (self.version, 5))
 
     @mock.patch("mysql_class.fetch_global_var")
     @mock.patch("mysql_class.Server.col_sql")
@@ -149,7 +229,7 @@ class UnitTest(unittest.TestCase):
         mysqldb = mysql_class.Server(self.name, self.server_id, self.sql_user,
                                      self.sql_pass, self.machine,
                                      defaults_file=self.defaults_file)
-
+        mysqldb.version = self.version
         mysqldb.upd_srv_stat()
 
         self.assertEqual((mysqldb.buf_size, mysqldb.cur_conn, mysqldb.thr_mem,
@@ -174,7 +254,7 @@ class UnitTest(unittest.TestCase):
         mysqldb = mysql_class.Server(self.name, self.server_id, self.sql_user,
                                      self.sql_pass, self.machine,
                                      defaults_file=self.defaults_file)
-
+        mysqldb.version = self.version
         mysqldb.upd_srv_stat()
 
         self.assertEqual((mysqldb.buf_size, mysqldb.cur_conn, mysqldb.thr_mem,

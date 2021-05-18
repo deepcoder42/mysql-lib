@@ -43,6 +43,8 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_tran_retry -> Test with tran_retry attribute.
+        test_conn_retry -> Test with conn_retry attribute.
         test_rep_user -> Test with rep_user passed.
         test_no_rep_user -> Test with no rep_user passed.
         test_conn -> Test with conn attribute.
@@ -79,6 +81,40 @@ class UnitTest(unittest.TestCase):
         self.config = {key1 + key2: self.cfg.japd}
         self.rep_user = "rep_user"
         self.rep_japd = "rep_japd"
+
+    def test_tran_retry(self):
+
+        """Function:  test_tran_retry
+
+        Description:  Test with tran_retry attribute.
+
+        Arguments:
+
+        """
+
+        mysqldb = mysql_class.SlaveRep(
+            self.cfg.name, self.cfg.sid, self.cfg.user, self.cfg.japd,
+            os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host,
+            port=self.cfg.port, rep_user=self.rep_user, rep_japd=self.rep_japd)
+
+        self.assertEqual(mysqldb.tran_retry, None)
+
+    def test_conn_retry(self):
+
+        """Function:  test_conn_retry
+
+        Description:  Test with conn_retry attribute.
+
+        Arguments:
+
+        """
+
+        mysqldb = mysql_class.SlaveRep(
+            self.cfg.name, self.cfg.sid, self.cfg.user, self.cfg.japd,
+            os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host,
+            port=self.cfg.port, rep_user=self.rep_user, rep_japd=self.rep_japd)
+
+        self.assertEqual(mysqldb.conn_retry, None)
 
     def test_rep_user(self):
 

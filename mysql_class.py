@@ -509,6 +509,7 @@ class Server(object):
         reconnect
         chg_db
         get_name
+        set_pass_config
 
     """
 
@@ -532,20 +533,16 @@ class Server(object):
 
         """
 
-        global KEY1
-        global KEY2
-
         self.name = name
         self.server_id = server_id
         self.sql_user = sql_user
-        self.sql_pass = sql_pass
         self.machine = os_type
         self.host = kwargs.get("host", "localhost")
         self.port = kwargs.get("port", 3306)
         self.defaults_file = kwargs.get("defaults_file",
                                         self.machine.defaults_file)
         self.extra_def_file = kwargs.get("extra_def_file", None)
-        self.config = {KEY1 + KEY2: self.sql_pass}
+        self.set_pass_config(sql_pass)
 
         # SQL connection handler.
         self.conn = None
@@ -621,6 +618,7 @@ class Server(object):
         self.indb_buf_evt = None
         self.indb_buf_evt_pct = None
         self.indb_buf_free = None
+        self.indb_buf_write = None
         self.crt_tmp_tbls = None
 
         # Server's GTID mode.
@@ -628,6 +626,9 @@ class Server(object):
 
         # Server's Binlog checksum.
         self.crc = None
+
+        # Server's version
+        self.version = None
 
     def set_srv_binlog_crc(self):
 
@@ -695,6 +696,7 @@ class Server(object):
         self.indb_buf_reqt = int(data["Innodb_buffer_pool_read_requests"])
         self.indb_buf_evt = int(data["Innodb_buffer_pool_read_ahead_evicted"])
         self.indb_buf_ahd = int(data["Innodb_buffer_pool_read_ahead"])
+        self.indb_buf_write = int(data["Innodb_buffer_pool_write_requests"])
         self.crt_tmp_tbls = int(data["Created_tmp_disk_tables"])
 
         # Percentage of dirty pages in data cache.
@@ -730,7 +732,10 @@ class Server(object):
         self.buf_size = int(data["key_buffer_size"])
         self.indb_buf = int(data["innodb_buffer_pool_size"])
         self.indb_log_buf = int(data["innodb_log_buffer_size"])
-        self.qry_cache = int(data["query_cache_size"])
+
+        # query_cache_size has been removed in MySQL 8.0
+        self.qry_cache = int(data.get("query_cache_size", "0"))
+
         self.read_buf = int(data["read_buffer_size"])
         self.read_rnd_buf = int(data["read_rnd_buffer_size"])
         self.sort_buf = int(data["sort_buffer_size"])
@@ -794,8 +799,11 @@ class Server(object):
         self.innodb_flush = fetch_sys_var(
             self,
             "innodb_flush_log_at_trx_commit")["innodb_flush_log_at_trx_commit"]
+
+        # innodb_support_xa has been removed in MySQL 8.0
         self.innodb_xa = fetch_sys_var(
-            self, "innodb_support_xa")["innodb_support_xa"]
+            self, "innodb_support_xa").get("innodb_support_xa", None)
+
         self.log_format = fetch_sys_var(self, "binlog_format")["binlog_format"]
 
     def upd_slv_rep_stat(self):
@@ -918,6 +926,8 @@ class Server(object):
                 self.conn = mysql.connector.connect(
                     host=self.host, user=self.sql_user, port=self.port,
                     database=database, **self.config)
+                self.version = self.conn.get_server_version()
+                self.conn_msg = None
 
             except mysql.connector.Error, err:
                 self.conn_msg = \
@@ -1080,6 +1090,23 @@ class Server(object):
         """
 
         return self.name
+
+    def set_pass_config(self, sql_pass):
+
+        """Method:  set_pass_config
+
+        Description:  Set the SQL passwd config attributes.
+
+        Arguments:
+            (input) sql_pass -> SQL user's passwd.
+
+        """
+
+        global KEY1
+        global KEY2
+
+        self.sql_pass = sql_pass
+        self.config = {KEY1 + KEY2: self.sql_pass}
 
 
 class Rep(Server):
@@ -1416,7 +1443,7 @@ class SlaveRep(Rep):
         self.io_state = None
         self.mst_host = None
         self.mst_port = None
-        self.retry = None
+        self.conn_retry = None
         self.mst_log = None
         self.mst_read_pos = None
         self.relay_log = None
@@ -1468,7 +1495,7 @@ class SlaveRep(Rep):
         self.auto_pos = None
         self.run = None
         self.tmp_tbl = None
-        self.retry = None
+        self.tran_retry = None
         self.read_only = None
         self.purged_gtidset = None
         self.retrieved_gtidset = None
@@ -1586,7 +1613,7 @@ class SlaveRep(Rep):
         self.io_state = data["Slave_IO_State"]
         self.mst_host = data["Master_Host"]
         self.mst_port = data["Master_Port"]
-        self.retry = data["Connect_Retry"]
+        self.conn_retry = data["Connect_Retry"]
         self.mst_log = data["Master_Log_File"]
         self.mst_read_pos = data["Read_Master_Log_Pos"]
         self.relay_log = data["Relay_Log_File"]
@@ -1667,11 +1694,23 @@ class SlaveRep(Rep):
         self.exe_gtid = data.get("Executed_Gtid_Set", None)
         self.auto_pos = data.get("Auto_Position", None)
 
-        self.run = fetch_global_var(self, "slave_running")["Slave_running"]
+        # tran_retry and run are in different location in MySQL 8.0
+        if self.version[0] < 8:
+            self.run = fetch_global_var(self, "slave_running")["Slave_running"]
+            self.tran_retry = fetch_global_var(
+                self,
+                "slave_retried_transactions")["Slave_retried_transactions"]
+
+        else:
+            sql = \
+                "select %s from performance_schema.replication_applier_status"
+            item = "SERVICE_STATE"
+            self.run = self.col_sql(sql % (item))[0][item]
+            ctr = "COUNT_TRANSACTIONS_RETRIES"
+            self.tran_retry = self.col_sql(sql % (ctr))[0][ctr]
+
         self.tmp_tbl = fetch_global_var(
             self, "slave_open_temp_tables")["Slave_open_temp_tables"]
-        self.retry = fetch_global_var(
-            self, "slave_retried_transactions")["Slave_retried_transactions"]
         self.read_only = fetch_sys_var(self, "read_only")["read_only"]
 
         self.upd_gtid_pos()
@@ -1836,11 +1875,11 @@ class SlaveRep(Rep):
         Arguments:
             (output) skip_ctr -> Skip_Counter
             (output) tmp_tbl -> slave_open_temp_tables
-            (output) retry -> slave_retried_transactions.
+            (output) tran_retry -> slave_retried_transactions.
 
         """
 
-        return self.skip_ctr, self.tmp_tbl, self.retry
+        return self.skip_ctr, self.tmp_tbl, self.tran_retry
 
     def fetch_do_tbl(self):
 

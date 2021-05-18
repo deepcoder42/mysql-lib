@@ -1,12 +1,13 @@
 #!/usr/bin/python
 # Classification (U)
 
-"""Program:  server_upd_srv_perf.py
+"""Program:  server_set_pass_config.py
 
-    Description:  Integration testing of Server.upd_srv_perf in mysql_class.py.
+    Description:  Integration testing of Server.set_pass_config method in
+        mysql_class.py.
 
     Usage:
-        test/integration/mysql_class/server_upd_srv_perf.py
+        test/integration/mysql_class/server_set_pass_config.py
 
     Arguments:
 
@@ -34,6 +35,10 @@ import version
 
 __version__ = version.__version__
 
+# Global
+KEY1 = "pass"
+KEY2 = "wd"
+
 
 class UnitTest(unittest.TestCase):
 
@@ -43,9 +48,7 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
-        test_pool_write -> Test with Innodb_buffer_pool_write_requests attr.
-        test_secondary_attr -> Test with secondary attribute.
-        test_base_attr -> Test with base attribute.
+        test_set_pass_config -> Test setting configuration settings.
 
     """
 
@@ -67,49 +70,27 @@ class UnitTest(unittest.TestCase):
             cfg.name, cfg.sid, cfg.user, cfg.japd,
             os_type=getattr(machine, cfg.serv_os)(), host=cfg.host,
             port=cfg.port, defaults_file=cfg.cfg_file)
-        self.svr.connect()
+        self.new_sql_pass = "my_japd2"
 
-    def test_pool_write(self):
+    def test_set_pass_config(self):
 
-        """Function:  test_pool_write
+        """Function:  test_set_pass_config
 
-        Description:  Test with Innodb_buffer_pool_write_requests attr.
-
-        Arguments:
-
-        """
-
-        self.svr.upd_srv_perf()
-
-        self.assertTrue(self.svr.indb_buf_write >= 0)
-
-    def test_secondary_attr(self):
-
-        """Function:  test_secondary_attr
-
-        Description:  Test with secondary attribute.
+        Description:  Test setting configuration settings.
 
         Arguments:
 
         """
 
-        self.svr.upd_srv_perf()
+        global KEY1
+        global KEY2
 
-        self.assertTrue(self.svr.binlog_tot >= 0)
+        new_config = {KEY1 + KEY2: self.new_sql_pass}
 
-    def test_base_attr(self):
+        self.svr.set_pass_config(self.new_sql_pass)
 
-        """Function:  test_base_attr
-
-        Description:  Test with base attribute.
-
-        Arguments:
-
-        """
-
-        self.svr.upd_srv_perf()
-
-        self.assertTrue(self.svr.max_use_conn >= 0)
+        self.assertEqual((self.svr.config, self.svr.sql_pass),
+                         (new_config, self.new_sql_pass))
 
 
 if __name__ == "__main__":

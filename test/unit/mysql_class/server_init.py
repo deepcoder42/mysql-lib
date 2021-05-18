@@ -42,6 +42,9 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_sql_pass -> Test with sql_pass attribute.
+        test_indb_buf_write -> Test with indb_buf_write attribute.
+        test_version -> Test with version attribute.
         test_config -> Test with config attribute.
         test_no_extra_def_file -> Test with no extra_def_file arg.
         test_extra_def_file -> Test with passing extra_def_file arg.
@@ -78,6 +81,54 @@ class UnitTest(unittest.TestCase):
         self.results = self.machine.defaults_file
         self.config = {key1 + key2: self.sql_pass}
 
+    def test_sql_pass(self):
+
+        """Function:  test_sql_pass
+
+        Description:  Test with sql_pass attribute.
+
+        Arguments:
+
+        """
+
+        mysqldb = mysql_class.Server(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            os_type=self.machine)
+
+        self.assertEqual(mysqldb.sql_pass, self.sql_pass)
+
+    def test_indb_buf_write(self):
+
+        """Function:  test_indb_buf_write
+
+        Description:  Test with indb_buf_write attribute.
+
+        Arguments:
+
+        """
+
+        mysqldb = mysql_class.Server(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            os_type=self.machine)
+
+        self.assertEqual(mysqldb.indb_buf_write, None)
+
+    def test_version(self):
+
+        """Function:  test_version
+
+        Description:  Test with version attribute.
+
+        Arguments:
+
+        """
+
+        mysqldb = mysql_class.Server(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            os_type=self.machine)
+
+        self.assertEqual(mysqldb.version, None)
+
     def test_config(self):
 
         """Function:  test_config
@@ -92,12 +143,7 @@ class UnitTest(unittest.TestCase):
             self.name, self.server_id, self.sql_user, self.sql_pass,
             os_type=self.machine)
 
-        self.assertEqual(
-            (mysqldb.name, mysqldb.server_id, mysqldb.sql_user,
-             mysqldb.sql_pass, mysqldb.machine, mysqldb.host,
-             mysqldb.config),
-            (self.name, self.server_id, self.sql_user, self.sql_pass,
-             self.machine, "localhost", self.config))
+        self.assertEqual(mysqldb.config, self.config)
 
     def test_no_extra_def_file(self):
 

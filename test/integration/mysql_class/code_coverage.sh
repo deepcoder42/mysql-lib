@@ -19,6 +19,7 @@ coverage run -a --source=mysql_class test/integration/mysql_class/server_get_nam
 coverage run -a --source=mysql_class test/integration/mysql_class/server_init.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_is_connected.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_reconnect.py
+coverage run -a --source=mysql_class test/integration/mysql_class/server_set_pass_config.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_set_srv_binlog_crc.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_set_srv_gtid.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_sql.py

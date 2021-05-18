@@ -43,6 +43,7 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_query_cache_size -> Test using version setting.
         test_percentage_attr -> Test one of the percentage attributes.
         test_decision -> Test with decision based attributes.
         test_derived -> Test with derived attributes.
@@ -69,6 +70,22 @@ class UnitTest(unittest.TestCase):
             os_type=getattr(machine, cfg.serv_os)(), host=cfg.host,
             port=cfg.port, defaults_file=cfg.cfg_file)
         self.svr.connect()
+
+    def test_query_cache_size(self):
+
+        """Function:  test_query_cache_size
+
+        Description:  Test using version setting.
+
+        Arguments:
+
+        """
+
+        self.svr.upd_srv_stat()
+
+        self.assertTrue(
+            (self.svr.qry_cache >= 0 and self.svr.version[0] < 8) or
+            (self.svr.qry_cache == 0 and self.svr.version[0] >= 8))
 
     def test_percentage_attr(self):
 

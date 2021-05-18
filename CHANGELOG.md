@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 The format is based on "Keep a Changelog".  This project adheres to Semantic Versioning.
 
 
+## [5.1.0] - 2021-04-21
+- Updated to work in MySQL 8.0 environment.
+- Updated to work in MySQL 5.7 environment.
+
+### Fixed
+- mysql_class.Server.connect:  Set self.conn_msg to None if login is successful.
+- mysql_class.SlaveRep.get_others:  Renamed self.retry to self.tran_retry.
+- mysql_class.SlaveRep.upd_slv_status:  Renamed conflicted self.retry to self.conn_retry and self.tran_retry.
+- mysql_class.SlaveRep.\_\_init\_\_:  Renamed conflicted self.retry to self.conn_retry and self.tran_retry.
+
+### Added
+- mysql_class.Server.set_pass_config:  Set the self.sql_pass and self.config attributes.
+
+### Changed
+- mysql_class.Server.\_\_init\_\_:  Added call to set_pass_config method and removed setting of self.sql_pass and self.config attributes.
+- mysql_class.SlaveRep.upd_slv_status:  The attributes self.tran_retry and self.run are in different location in MySQL 8.0.
+- mysql_class.Server.upd_mst_rep_stat:  Set self.innodb_xa to None if not present in MySQL 8.0.
+- mysql_class.Server.upd_srv_stat:  Set self.qry_cache to zero if not present in MySQL 8.0.
+- mysql_class.Server.connect:  Added get_server_version call to set server's self.version attribute.
+- mysql_class.Server.upd_srv_perf:  Added self.indb_buf_write to capture innodb_buffer_pool_write_requests.
+- mysql_class.Server.\_\_init\_\_:  Added self.indb_buf_write attribute to hold MySQL's innodb_buffer_pool_write_requests.
+- mysql_class.Server.\_\_init\_\_:  Added self.version attribute to hold MySQL server's version.
+
+
 ## [5.0.4] - 2021-02-05
 ### Changed
 - mysql_libs.create_slv_array:  Added replication user information to mysql_class.SlaveRep instance call.

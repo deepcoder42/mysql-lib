@@ -43,6 +43,7 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_pool_write -> Test with Innodb_buffer_pool_write_requests attr.
         test_value -> Test with values returned.
 
     """
@@ -100,8 +101,30 @@ class UnitTest(unittest.TestCase):
              "Value": "14"},
             {"Variable_name": "Innodb_buffer_pool_read_ahead",
              "Value": "15"},
+            {"Variable_name": "Innodb_buffer_pool_write_requests",
+             "Value": "17"},
             {"Variable_name": "Created_tmp_disk_tables",
              "Value": "16"}]
+
+    @mock.patch("mysql_class.Server.col_sql")
+    def test_pool_write(self, mock_sql):
+
+        """Function:  test_pool_write
+
+        Description:  Test with Innodb_buffer_pool_write_requests attr.
+
+        Arguments:
+
+        """
+
+        mock_sql.return_value = self.show_status
+        mysqldb = mysql_class.Server(self.name, self.server_id, self.sql_user,
+                                     self.sql_pass, self.machine,
+                                     defaults_file=self.defaults_file)
+
+        mysqldb.upd_srv_perf()
+
+        self.assertEqual(mysqldb.indb_buf_write, 17)
 
     @mock.patch("mysql_class.Server.col_sql")
     def test_value(self, mock_sql):

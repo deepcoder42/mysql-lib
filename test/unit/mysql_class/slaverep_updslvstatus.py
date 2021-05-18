@@ -43,6 +43,8 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_run -> Test with run attribute in MySQL 8.0.
+        test_run_pre -> Test with run attribute in pre-MySQL 8.0.
         test_none_secsbehind -> Test None for Seconds_Behind_Master.
         test_int_secsbehind -> Test integer for Seconds_Behind_Master.
         test_string_secsbehind -> Test string for Seconds_Behind_Master.
@@ -82,11 +84,19 @@ class UnitTest(unittest.TestCase):
         self.port = 3307
         self.defaults_file = "def_cfg_file"
         self.extra_def_file = "extra_cfg_file"
+        self.version = (5, 7, 33)
+        self.version2 = (8, 0, 23)
+        self.fetch_vars = [{"Slave_running": "ON"},
+                           {"Slave_retried_transactions": 0},
+                           {"Slave_open_temp_tables": "1"}]
+        self.fetch_vars2 = [{"Slave_open_temp_tables": "1"}]
+        self.query = [[{"SERVICE_STATE": "ON"}],
+                      [{"COUNT_TRANSACTIONS_RETRIES": 0}]]
 
         self.show_stat = [{"Slave_IO_State": "up",
                            "Master_Host": "masterhost",
                            "Master_Port": "masterport",
-                           "Connect_Retry": "retry",
+                           "Connect_Retry": "conn_retry",
                            "Master_Log_File": "masterlog",
                            "Read_Master_Log_Pos": "masterpos",
                            "Relay_Log_File": "relaylog",
@@ -139,6 +149,62 @@ class UnitTest(unittest.TestCase):
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
                 mock.Mock(return_value=True))
+    @mock.patch("mysql_class.Server.col_sql")
+    @mock.patch("mysql_class.fetch_sys_var")
+    @mock.patch("mysql_class.fetch_global_var")
+    @mock.patch("mysql_class.show_slave_stat")
+    def test_run(self, mock_stat, mock_global, mock_var, mock_qry):
+
+        """Function:  test_run
+
+        Description:  Test with run attribute in MySQL 8.0.
+
+        Arguments:
+
+        """
+
+        mock_var.return_value = {"read_only": "ON"}
+        mock_global.side_effect = self.fetch_vars2
+        mock_stat.return_value = self.show_stat
+        mock_qry.side_effect = self.query
+
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version2
+        mysqlrep.upd_slv_status()
+
+        self.assertEqual((mysqlrep.run, mysqlrep.tran_retry), ("ON", 0))
+
+    @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
+                mock.Mock(return_value=True))
+    @mock.patch("mysql_class.fetch_sys_var")
+    @mock.patch("mysql_class.fetch_global_var")
+    @mock.patch("mysql_class.show_slave_stat")
+    def test_run_pre(self, mock_stat, mock_global, mock_var):
+
+        """Function:  test_run_pre
+
+        Description:  Test with run attribute in pre-MySQL 8.0.
+
+        Arguments:
+
+        """
+
+        mock_var.return_value = {"read_only": "ON"}
+        mock_global.side_effect = self.fetch_vars
+        mock_stat.return_value = self.show_stat
+
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
+        mysqlrep.upd_slv_status()
+
+        self.assertEqual((mysqlrep.run, mysqlrep.tran_retry), ("ON", 0))
+
+    @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
+                mock.Mock(return_value=True))
     @mock.patch("mysql_class.fetch_sys_var")
     @mock.patch("mysql_class.fetch_global_var")
     @mock.patch("mysql_class.show_slave_stat")
@@ -155,17 +221,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Seconds_Behind_Master"] = None
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.secs_behind, None)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -186,17 +250,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Seconds_Behind_Master"] = 1
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.secs_behind, 1)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -217,17 +279,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Seconds_Behind_Master"] = "1"
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.secs_behind, 1)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -246,17 +306,15 @@ class UnitTest(unittest.TestCase):
         """
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.secs_behind, "secsbehind")
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -277,17 +335,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Skip_Counter"] = 1
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.skip_ctr, 1)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -308,17 +364,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Skip_Counter"] = "1"
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.skip_ctr, 1)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -337,17 +391,15 @@ class UnitTest(unittest.TestCase):
         """
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.skip_ctr, "skipcnt")
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -368,17 +420,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Master_Server_Id"] = 11
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.mst_id, 11)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -399,17 +449,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Master_Server_Id"] = "11"
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.mst_id, 11)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -428,17 +476,15 @@ class UnitTest(unittest.TestCase):
         """
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.mst_id, "serverid")
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -459,17 +505,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Last_SQL_Errno"] = 1
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.sql_err, 1)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -490,17 +534,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Last_SQL_Errno"] = "1"
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.sql_err, 1)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -519,17 +561,15 @@ class UnitTest(unittest.TestCase):
         """
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.sql_err, "lastsqlnumber")
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -550,17 +590,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Last_IO_Errno"] = 1
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.io_err, 1)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -581,17 +619,15 @@ class UnitTest(unittest.TestCase):
         self.show_stat[0]["Last_IO_Errno"] = "1"
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.io_err, 1)
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -610,17 +646,15 @@ class UnitTest(unittest.TestCase):
         """
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual(mysqlrep.io_err, "lastionumber")
 
     @mock.patch("mysql_class.SlaveRep.upd_gtid_pos",
@@ -639,17 +673,15 @@ class UnitTest(unittest.TestCase):
         """
 
         mock_var.return_value = {"read_only": "ON"}
-        mock_global.side_effect = [{"Slave_running": "Value"},
-                                   {"Slave_open_temp_tables": "Value"},
-                                   {"Slave_retried_transactions": "Value"}]
+        mock_global.side_effect = self.fetch_vars
         mock_stat.return_value = self.show_stat
 
-        mysqlrep = mysql_class.SlaveRep(self.name, self.server_id,
-                                        self.sql_user, self.sql_pass,
-                                        self.machine,
-                                        defaults_file=self.defaults_file)
-
+        mysqlrep = mysql_class.SlaveRep(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            self.machine, defaults_file=self.defaults_file)
+        mysqlrep.version = self.version
         mysqlrep.upd_slv_status()
+
         self.assertEqual((mysqlrep.io_state, mysqlrep.slv_io,
                           mysqlrep.slv_sql, mysqlrep.auto_pos),
                          ("up", "running", "sqlcode", "autopos"))

@@ -43,6 +43,9 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_sql_pass -> Test with sql_pass attribute.
+        test_indb_buf_write -> Test with indb_buf_write attribute.
+        test_version -> Test with version attribute.
         test_conn_msg -> Test with conn_msg attribute.
         test_conn -> Test with conn attribute.
         test_config -> Test with config attribute.
@@ -76,6 +79,55 @@ class UnitTest(unittest.TestCase):
         self.machine = getattr(machine, "Linux")()
         self.results = self.machine.defaults_file
         self.config = {key1 + key2: self.cfg.japd}
+
+    def test_sql_pass(self):
+
+        """Function:  test_sql_pass
+
+        Description:  Test with sql_pass attribute.
+
+        Arguments:
+
+        """
+
+        mysqldb = mysql_class.Server(
+            self.cfg.name, self.cfg.sid, self.cfg.user, self.cfg.japd,
+            os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host,
+            port=self.cfg.port)
+
+        self.assertEqual(mysqldb.sql_pass, self.cfg.japd)
+
+    def test_indb_buf_write(self):
+
+        """Function:  test_indb_buf_write
+
+        Description:  Test with indb_buf_write attribute.
+
+        Arguments:
+
+        """
+
+        mysqldb = mysql_class.Server(
+            self.cfg.name, self.cfg.sid, self.cfg.user, self.cfg.japd,
+            os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host)
+
+        self.assertEqual(mysqldb.indb_buf_write, None)
+
+    def test_version(self):
+
+        """Function:  test_version
+
+        Description:  Test with version attribute.
+
+        Arguments:
+
+        """
+
+        mysqldb = mysql_class.Server(
+            self.cfg.name, self.cfg.sid, self.cfg.user, self.cfg.japd,
+            os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host)
+
+        self.assertEqual(mysqldb.version, None)
 
     def test_conn_msg(self):
 
@@ -124,11 +176,7 @@ class UnitTest(unittest.TestCase):
             os_type=getattr(machine, self.cfg.serv_os)(), host=self.cfg.host,
             port=self.cfg.port)
 
-        self.assertEqual(
-            (mysqldb.name, mysqldb.server_id, mysqldb.sql_user, mysqldb.host,
-             mysqldb.config),
-            (self.cfg.name, self.cfg.sid, self.cfg.user, self.cfg.host,
-             self.config))
+        self.assertEqual(mysqldb.config, self.config)
 
     def test_no_extra_def_file(self):
 
