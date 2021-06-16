@@ -4,6 +4,22 @@ All notable changes to this project will be documented in this file.
 The format is based on "Keep a Changelog".  This project adheres to Semantic Versioning.
 
 
+## [5.2.0] - 2021-05-14
+### Fixed
+- mysql_class.Server.\_\_init\_\_:  Initialized self.config and self.sql_pass attributes.
+
+### Added
+- mysql_class.Server.setup_ssl:  Update the ssl attributes and append to config.
+- mysql_class.Server.set_ssl_config:  Append ssl attributes to config.
+
+### Changed
+- mysql_class.SlaveRep.\_\_init\_\_:  Added capability to allow SSL attributes to be set.
+- mysql_class.MasterRep.\_\_init\_\_:  Added capability to allow SSL attributes to be set.
+- mysql_class.Rep.\_\_init\_\_:  Added capability to allow SSL attributes to be set.
+- mysql_class.Server.\_\_init\_\_:  Added SSL configuration setting attributes.
+- mysql_class.Server.set_pass_config:  Instead of initialize the dictionary, updated the dictionary and removed setting self.sql_pass attribute.
+
+
 ## [5.1.0] - 2021-04-21
 - Updated to work in MySQL 8.0 environment.
 - Updated to work in MySQL 5.7 environment.

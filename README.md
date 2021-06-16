@@ -120,6 +120,9 @@ Make the appropriate change to the environment.
     - sid = SERVER_ID
     - extra_def_file = "PYTHON_PROJECT/config/mysql.cfg"
     - cfg_file = "DIRECTORY_PATH/my.cnf"
+    - ssl_disabled = True
+    - ssl_verify_id = True
+    - ssl_verify_cert = True
 
   * Change these entries only if required:
     - serv_os = "Linux"

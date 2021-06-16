@@ -86,8 +86,9 @@ class UnitTest(unittest.TestCase):
         global KEY2
 
         new_config = {KEY1 + KEY2: self.new_sql_pass}
+        self.svr.sql_pass = self.new_sql_pass
 
-        self.svr.set_pass_config(self.new_sql_pass)
+        self.svr.set_pass_config()
 
         self.assertEqual((self.svr.config, self.svr.sql_pass),
                          (new_config, self.new_sql_pass))

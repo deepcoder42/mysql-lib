@@ -140,10 +140,12 @@ class UnitTest(unittest.TestCase):
         """
 
         tmp_japd = self.svr.sql_pass
-        self.svr.set_pass_config("testme")
+        self.svr.sql_pass = "testme"
+        self.svr.set_pass_config()
         self.svr.connect(silent=True)
         tmp_msg = self.svr.conn_msg[:48]
-        self.svr.set_pass_config(tmp_japd)
+        self.svr.sql_pass = tmp_japd
+        self.svr.set_pass_config()
         self.svr.connect(silent=True)
 
         self.assertEqual((tmp_msg, self.svr.conn_msg), (self.results, None))

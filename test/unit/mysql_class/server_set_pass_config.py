@@ -47,6 +47,7 @@ class UnitTest(unittest.TestCase):
 
     Methods:
         setUp -> Initialize testing environment.
+        test_change_pass -> Test change passwd and update config.
         test_set_pass_config -> Test setting configuration settings.
 
     """
@@ -72,11 +73,11 @@ class UnitTest(unittest.TestCase):
         self.extra_def_file = "extra_cfg_file"
         self.new_sql_pass = "my_japd2"
 
-    def test_set_pass_config(self):
+    def test_change_pass(self):
 
-        """Function:  test_set_pass_config
+        """Function:  test_change_pass
 
-        Description:  Test setting configuration settings.
+        Description:  Test change passwd and update config.
 
         Arguments:
 
@@ -90,10 +91,32 @@ class UnitTest(unittest.TestCase):
         mysqldb = mysql_class.Server(
             self.name, self.server_id, self.sql_user, self.sql_pass,
             os_type=self.machine, defaults_file=self.defaults_file)
-        mysqldb.set_pass_config(self.new_sql_pass)
+        mysqldb.sql_pass = self.new_sql_pass
+        mysqldb.set_pass_config()
 
         self.assertEqual((mysqldb.config, mysqldb.sql_pass),
                          (new_config, self.new_sql_pass))
+
+    def test_set_pass_config(self):
+
+        """Function:  test_set_pass_config
+
+        Description:  Test setting configuration settings.
+
+        Arguments:
+
+        """
+
+        global KEY1
+        global KEY2
+
+        config = {KEY1 + KEY2: self.sql_pass}
+
+        mysqldb = mysql_class.Server(
+            self.name, self.server_id, self.sql_user, self.sql_pass,
+            os_type=self.machine, defaults_file=self.defaults_file)
+
+        self.assertEqual(mysqldb.config, config)
 
 
 if __name__ == "__main__":

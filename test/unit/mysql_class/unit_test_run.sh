@@ -49,8 +49,10 @@ test/unit/mysql_class/server_init.py
 test/unit/mysql_class/server_is_connected.py
 test/unit/mysql_class/server_reconnect.py
 test/unit/mysql_class/server_set_pass_config.py
+test/unit/mysql_class/server_set_ssl_config.py
 test/unit/mysql_class/server_setsrvbinlogcrc.py
 test/unit/mysql_class/server_setsrvgtid.py
+test/unit/mysql_class/server_setup_ssl.py
 test/unit/mysql_class/server_updlogstats.py
 test/unit/mysql_class/server_updmstrepstat.py
 test/unit/mysql_class/server_updsrvperf.py

@@ -22,6 +22,7 @@ coverage run -a --source=mysql_class test/integration/mysql_class/server_reconne
 coverage run -a --source=mysql_class test/integration/mysql_class/server_set_pass_config.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_set_srv_binlog_crc.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_set_srv_gtid.py
+coverage run -a --source=mysql_class test/integration/mysql_class/server_setup_ssl.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_sql.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_upd_srv_perf.py
 coverage run -a --source=mysql_class test/integration/mysql_class/server_upd_srv_stat.py

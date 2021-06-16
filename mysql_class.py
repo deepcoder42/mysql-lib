@@ -510,6 +510,8 @@ class Server(object):
         chg_db
         get_name
         set_pass_config
+        setup_ssl
+        set_ssl_config
 
     """
 
@@ -530,6 +532,13 @@ class Server(object):
                 host -> Host name or IP of server.
                 port -> Port for MySQL.
                 defaults_file -> Location of my.cnf file.
+                ssl_client_ca -> SSL certificate authority file.
+                ssl_client_key -> SSL X.509 key file.
+                ssl_client_cert -> SSL X.509 certificate file.
+                ssl_client_flag -> SSL client flag option.
+                ssl_disabled -> True|False - Disable SSL.
+                ssl_verify_id -> True|False - Validate the destination host.
+                ssl_verify_cert -> True|False - Validate the CA certification.
 
         """
 
@@ -542,7 +551,22 @@ class Server(object):
         self.defaults_file = kwargs.get("defaults_file",
                                         self.machine.defaults_file)
         self.extra_def_file = kwargs.get("extra_def_file", None)
-        self.set_pass_config(sql_pass)
+        self.config = {}
+
+        # Passwd configuration setup
+        self.sql_pass = sql_pass
+        self.set_pass_config()
+
+        # SSL configuration settings
+        self.ssl_client_ca = kwargs.get("ssl_client_ca", None)
+        self.ssl_client_key = kwargs.get("ssl_client_key", None)
+        self.ssl_client_cert = kwargs.get("ssl_client_cert", None)
+        self.ssl_client_flag = kwargs.get("ssl_client_flag",
+                                          mysql.connector.ClientFlag.SSL)
+        self.ssl_disabled = kwargs.get("ssl_disabled", False)
+        self.ssl_verify_id = kwargs.get("ssl_verify_id", False)
+        self.ssl_verify_cert = kwargs.get("ssl_verify_cert", False)
+        self.set_ssl_config()
 
         # SQL connection handler.
         self.conn = None
@@ -1091,22 +1115,73 @@ class Server(object):
 
         return self.name
 
-    def set_pass_config(self, sql_pass):
+    def set_pass_config(self):
 
         """Method:  set_pass_config
 
         Description:  Set the SQL passwd config attributes.
 
         Arguments:
-            (input) sql_pass -> SQL user's passwd.
 
         """
 
         global KEY1
         global KEY2
 
-        self.sql_pass = sql_pass
-        self.config = {KEY1 + KEY2: self.sql_pass}
+        self.config[KEY1 + KEY2] = self.sql_pass
+
+    def setup_ssl(self, ssl_client_ca=None, ssl_client_key=None,
+                  ssl_client_cert=None,
+                  ssl_client_flag=mysql.connector.ClientFlag.SSL):
+
+        """Method:  setup_ssl
+
+        Description:  Set the ssl attributes and append/update config
+            dictionary.
+
+        Arguments:
+            (input) ssl_client_ca -> SSL certificate authority file.
+            (input) ssl_client_key -> SSL X.509 key file.
+            (input) ssl_client_cert -> SSL X.509 certificate file.
+            (input) ssl_client_flag -> SSL client flag option.
+
+        """
+
+        self.ssl_client_ca = ssl_client_ca
+        self.ssl_client_key = ssl_client_key
+        self.ssl_client_cert = ssl_client_cert
+        self.ssl_client_flag = ssl_client_flag
+
+        if self.ssl_client_ca \
+           or (self.ssl_client_key and self.ssl_client_cert):
+
+            self.set_ssl_config()
+
+    def set_ssl_config(self):
+
+        """Method:  set_ssl_config
+
+        Description:  Append SSL attributes to config.
+
+        Arguments:
+
+        """
+
+        if self.ssl_client_ca \
+           or (self.ssl_client_key and self.ssl_client_cert):
+
+            self.config["client_flags"] = [self.ssl_client_flag]
+            self.config["ssl_disabled"] = self.ssl_disabled
+            self.config["ssl_verify_identity"] = self.ssl_verify_id
+            self.config["ssl_ca"] = ""
+
+            if self.ssl_client_ca:
+                self.config["ssl_ca"] = self.ssl_client_ca
+                self.config["ssl_verify_cert"] = self.ssl_verify_cert
+
+            if self.ssl_client_key and self.ssl_client_cert:
+                self.config["ssl_key"] = self.ssl_client_key
+                self.config["ssl_cert"] = self.ssl_client_cert
 
 
 class Rep(Server):
@@ -1147,6 +1222,13 @@ class Rep(Server):
                 host -> Host name or IP of server.
                 port -> Port for MySQL.
                 defaults_file -> Location of my.cnf file.
+                ssl_client_ca -> SSL certificate authority file.
+                ssl_client_key -> SSL X.509 key file.
+                ssl_client_cert -> SSL X.509 certificate file.
+                ssl_client_flag -> SSL client flag option.
+                ssl_disabled -> True|False - Disable SSL.
+                ssl_verify_id -> True|False - Validate the destination host.
+                ssl_verify_cert -> True|False - Validate the CA certification.
 
         """
 
@@ -1155,7 +1237,15 @@ class Rep(Server):
             host=kwargs.get("host", "localhost"),
             port=kwargs.get("port", 3306),
             defaults_file=kwargs.get("defaults_file", os_type.defaults_file),
-            extra_def_file=kwargs.get("extra_def_file", None))
+            extra_def_file=kwargs.get("extra_def_file", None),
+            ssl_disabled=kwargs.get("ssl_disabled", False),
+            ssl_client_flag=kwargs.get("ssl_client_flag",
+                                       mysql.connector.ClientFlag.SSL),
+            ssl_client_ca=kwargs.get("ssl_client_ca", None),
+            ssl_verify_cert=kwargs.get("ssl_verify_cert", False),
+            ssl_client_cert=kwargs.get("ssl_client_cert", None),
+            ssl_verify_id=kwargs.get("ssl_verify_id", False),
+            ssl_client_key=kwargs.get("ssl_client_key", None))
 
     def show_slv_hosts(self):
 
@@ -1297,6 +1387,13 @@ class MasterRep(Rep):
                 host -> Host name or IP of server.
                 port -> Port for MySQL.
                 defaults_file -> Location of my.cnf file.
+                ssl_client_ca -> SSL certificate authority file.
+                ssl_client_key -> SSL X.509 key file.
+                ssl_client_cert -> SSL X.509 certificate file.
+                ssl_client_flag -> SSL client flag option.
+                ssl_disabled -> True|False - Disable SSL.
+                ssl_verify_id -> True|False - Validate the destination host.
+                ssl_verify_cert -> True|False - Validate the CA certification.
 
         """
 
@@ -1305,7 +1402,15 @@ class MasterRep(Rep):
             host=kwargs.get("host", "localhost"),
             port=kwargs.get("port", 3306),
             defaults_file=kwargs.get("defaults_file", os_type.defaults_file),
-            extra_def_file=kwargs.get("extra_def_file", None))
+            extra_def_file=kwargs.get("extra_def_file", None),
+            ssl_client_flag=kwargs.get("ssl_client_flag",
+                                       mysql.connector.ClientFlag.SSL),
+            ssl_disabled=kwargs.get("ssl_disabled", False),
+            ssl_client_ca=kwargs.get("ssl_client_ca", None),
+            ssl_verify_cert=kwargs.get("ssl_verify_cert", False),
+            ssl_client_key=kwargs.get("ssl_client_key", None),
+            ssl_client_cert=kwargs.get("ssl_client_cert", None),
+            ssl_verify_id=kwargs.get("ssl_verify_id", False))
 
         self.pos = None
         self.do_db = None
@@ -1430,6 +1535,13 @@ class SlaveRep(Rep):
                 defaults_file -> Location of my.cnf file.
                 rep_user -> Replication user name.
                 rep_japd -> Replication user password.
+                ssl_client_ca -> SSL certificate authority file.
+                ssl_client_key -> SSL X.509 key file.
+                ssl_client_cert -> SSL X.509 certificate file.
+                ssl_client_flag -> SSL client flag option.
+                ssl_disabled -> True|False - Disable SSL.
+                ssl_verify_id -> True|False - Validate the destination host.
+                ssl_verify_cert -> True|False - Validate the CA certification.
 
         """
 
@@ -1438,7 +1550,15 @@ class SlaveRep(Rep):
             host=kwargs.get("host", "localhost"),
             port=kwargs.get("port", 3306),
             defaults_file=kwargs.get("defaults_file", os_type.defaults_file),
-            extra_def_file=kwargs.get("extra_def_file", None))
+            extra_def_file=kwargs.get("extra_def_file", None),
+            ssl_client_flag=kwargs.get("ssl_client_flag",
+                                       mysql.connector.ClientFlag.SSL),
+            ssl_disabled=kwargs.get("ssl_disabled", False),
+            ssl_client_ca=kwargs.get("ssl_client_ca", None),
+            ssl_verify_id=kwargs.get("ssl_verify_id", False),
+            ssl_client_cert=kwargs.get("ssl_client_cert", None),
+            ssl_verify_cert=kwargs.get("ssl_verify_cert", False),
+            ssl_client_key=kwargs.get("ssl_client_key", None))
 
         self.io_state = None
         self.mst_host = None

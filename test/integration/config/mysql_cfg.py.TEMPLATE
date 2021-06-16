@@ -20,3 +20,26 @@ serv_os = "Linux"
 port = 3306
 # MySQL configuration settings
 cfg_file = "MYSQL_DIRECTORY/mysqld.cnf"
+# SSL Configuration settings
+# If not set will connect to MySQL without using SSL connections.
+# File containing the SSL certificate authority.
+# Example: ssl_client_ca = "/opt/mysql/certs/ca.pem"
+ssl_client_ca = None
+# File containing the SSL key.
+# Example:  ssl_client_key = "/opt/mysql/certs/client-key.pem"
+ssl_client_key = None
+# File containing the SSL certificate file.
+# Example: ssl_client_cert = "/opt/mysql/certs/client-cert.pem"
+ssl_client_cert = None
+# SSL Client Flag Value.
+# If not set, will take the default value of mysql.connector.ClientFlag.SSL (typically 2048).
+ssl_client_flag = None
+# SSL Disabled
+# Will disable SSL for connection if set to True.
+ssl_disabled = False
+# SSL Verify Identity
+# Will verify the hostname of the destination with the certifcation.
+ssl_verify_id = False
+# SSL Verify Certification
+# Will validate the CA certification.
+ssl_verify_cert = False
